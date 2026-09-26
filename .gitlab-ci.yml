@@ -1,0 +1,73 @@
+
+image: maven:3.9.4-eclipse-temurin-17
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  DOCKER_IMAGE_SHA: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+  DOCKER_IMAGE_LATEST: $CI_REGISTRY_IMAGE:latest
+
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths:
+    - .m2/repository/
+
+stages:
+  - ci-lint-and-test
+  - ci-build
+  - release
+  - deploy
+  - verify
+
+
+linter:
+  stage: ci-lint-and-test
+  script:
+    - echo "linter"
+
+unit-tests:
+  stage: ci-lint-and-test
+  script:
+    - echo "unit test"
+
+integration-tests:
+  stage: ci-lint-and-test
+  script:
+    - echo "integration test"
+
+build-test:
+  stage: ci-build
+  script:
+    - echo "build test"
+  artifacts:
+    paths:
+      - target/*.jar
+    expire_in: 1 day
+
+
+docker-build-and-push:
+  stage: release
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u "$CI_REGISTRY_USER" --password-stdin
+  script:
+    - docker build -t $DOCKER_IMAGE_SHA -t $DOCKER_IMAGE_LATEST .
+    - docker push $DOCKER_IMAGE_SHA
+    - docker push $DOCKER_IMAGE_LATEST
+  dependencies:
+    - build-test
+  only:
+    - main
+
+render-deploy:
+  stage: deploy
+  image: curlimages/curl:latest
+  script:
+    - echo "Disparando o Webhook de Deploy no Render..."
+    - curl -X POST "$RENDER_DEPLOY_HOOK_URL"
+  dependencies:
+    - docker-build-and-push
+  only:
+    - main
+
