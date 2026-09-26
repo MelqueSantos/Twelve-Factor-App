@@ -24,7 +24,7 @@ public class LoggingConfig {
     public void configureLogger() {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         loggerContext.getLogger("org.springframework.web.filter.CommonsRequestLoggingFilter").setLevel(Level.valueOf(logLevel));
-        LogLevel.
+
     }
 
     @Bean

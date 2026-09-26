@@ -24,5 +24,6 @@ spring:
         format_sql: true
     show-sql: true
 
+  log_level: ${LOG_LEVEL}
 
 
