@@ -5,7 +5,7 @@ services:
       dockerfile: ./Dockerfile
     container_name: "app-de-doze-fatores"
     ports:
-      - ${PORT}:8080
+      - ${PORT}:8888
     env_file:
       - .env
     networks:
